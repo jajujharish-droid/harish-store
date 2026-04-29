@@ -14,12 +14,7 @@ header{display:flex;justify-content:space-between;padding:15px;background:black;
 button{width:100%;padding:10px;margin-top:5px;border:none;border-radius:8px}
 .cart{background:orange;color:white}
 .order{background:#25D366;color:white}
-
-.page{
-position:fixed;top:0;left:0;width:100%;height:100%;
-background:white;display:none;padding:15px
-}
-
+.page{position:fixed;top:0;left:0;width:100%;height:100%;background:white;display:none;padding:15px;overflow:auto}
 input{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid #ddd}
 </style>
 
@@ -29,42 +24,66 @@ input{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid #d
 
 <header>
 <div>🔥 Harish Store</div>
-<div id="userInfo" onclick="logout()">Login</div>
+<div onclick="openCart()">🛒</div>
 </header>
 
-<!-- LOGIN PAGE -->
-<div id="loginPage" class="page">
-<h3>Login</h3>
-<input id="username" placeholder="Username">
-<input id="password" placeholder="Password" type="password">
-<button onclick="login()">Login</button>
-</div>
+<input id="search" placeholder="Search..." onkeyup="search()" style="margin:10px;padding:10px;width:90%">
 
 <div class="container" id="products"></div>
+
+<!-- DETAIL -->
+<div id="detail" class="page">
+<button onclick="closePage()">← Back</button>
+<img id="dimg">
+<h3 id="dname"></h3>
+<p id="dprice"></p>
+<button class="cart" onclick="addToCart()">Add to Cart</button>
+</div>
+
+<!-- CART -->
+<div id="cartPage" class="page">
+<button onclick="closePage()">← Back</button>
+<h3>Cart</h3>
+<div id="cartItems"></div>
+<h3 id="total"></h3>
+
+<h3>Details</h3>
+<input id="name" placeholder="Name">
+<input id="phone" placeholder="Phone">
+<input id="address" placeholder="Address">
+
+<button class="order" onclick="placeOrder()">Order</button>
+</div>
 
 <!-- ADMIN -->
 <div id="adminPage" class="page">
 <button onclick="closePage()">← Back</button>
 <h3>Admin Panel</h3>
+
 <input id="pname" placeholder="Product name">
 <input id="pprice" placeholder="Price">
 <input id="pimg" placeholder="Image URL">
+<input id="pcat" placeholder="Category">
+
 <button onclick="addProduct()">Add Product</button>
 </div>
 
 <script>
 
-// PRODUCTS
 let products=JSON.parse(localStorage.getItem("products")||`[
-{"name":"Shoes","price":499,"img":"https://images.unsplash.com/photo-1528701800489-20be3c4dbe3c"},
-{"name":"Sneakers","price":599,"img":"https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb"}
+{"name":"Shoes","price":499,"img":"https://images.unsplash.com/photo-1528701800489-20be3c4dbe3c","cat":"shoes"},
+{"name":"Sneakers","price":599,"img":"https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb","cat":"shoes"},
+{"name":"Slippers","price":199,"img":"https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a","cat":"slippers"}
 ]`);
 
+let selected=null;
+
+// LOAD
 function load(){
 let html="";
 products.forEach((p,i)=>{
 html+=`
-<div class="card">
+<div class="card" onclick="openDetail(${i})">
 <img src="${p.img}">
 <h4>${p.name}</h4>
 <p class="price">₹${p.price}</p>
@@ -74,47 +93,83 @@ productsDiv.innerHTML=html;
 localStorage.setItem("products",JSON.stringify(products));
 }
 
-// LOGIN SYSTEM
-function login(){
-let u=usernameInput.value;
-let p=passwordInput.value;
-
-if(u==="admin" && p==="1234"){
-localStorage.setItem("user","admin");
-loginPage.style.display="none";
-updateUser();
-alert("Admin Login");
-}else{
-alert("Wrong login");
-}
+// DETAIL
+function openDetail(i){
+selected=products[i];
+dimg.src=selected.img;
+dname.innerText=selected.name;
+dprice.innerText="₹"+selected.price;
+detail.style.display="block";
 }
 
-// LOGOUT
-function logout(){
-localStorage.removeItem("user");
-updateUser();
-loginPage.style.display="block";
+function closePage(){
+detail.style.display="none";
+cartPage.style.display="none";
+adminPage.style.display="none";
 }
 
-// CHECK LOGIN
-function updateUser(){
-let user=localStorage.getItem("user");
-
-if(user==="admin"){
-userInfo.innerText="Admin";
-}else{
-userInfo.innerText="Login";
-}
+// CART
+function addToCart(){
+let cart=JSON.parse(localStorage.getItem("cart")||"[]");
+let f=cart.find(c=>c.name==selected.name);
+if(f){f.qty++} else {cart.push({...selected,qty:1})}
+localStorage.setItem("cart",JSON.stringify(cart));
+alert("Added");
 }
 
-// OPEN ADMIN (DOUBLE CLICK)
+// OPEN CART
+function openCart(){
+cartPage.style.display="block";
+loadCart();
+}
+
+// LOAD CART
+function loadCart(){
+let cart=JSON.parse(localStorage.getItem("cart")||"[]");
+let html="";let total=0;
+
+cart.forEach((c,i)=>{
+total+=c.price*c.qty;
+html+=`
+<div>
+${c.name} x${c.qty} = ₹${c.price*c.qty}
+<button onclick="change(${i},1)">+</button>
+<button onclick="change(${i},-1)">-</button>
+</div>`;
+});
+
+cartItems.innerHTML=html;
+totalText.innerText="Total: ₹"+total;
+}
+
+// QTY
+function change(i,v){
+let cart=JSON.parse(localStorage.getItem("cart"));
+cart[i].qty+=v;
+if(cart[i].qty<=0) cart.splice(i,1);
+localStorage.setItem("cart",JSON.stringify(cart));
+loadCart();
+}
+
+// ORDER
+function placeOrder(){
+let name=nameInput.value;
+let phone=phoneInput.value;
+let address=addressInput.value;
+let cart=JSON.parse(localStorage.getItem("cart")||"[]");
+
+let msg="Order:\n";
+cart.forEach(c=>{
+msg+=c.name+" x"+c.qty+"\n";
+});
+msg+="\n"+name+"\n"+phone+"\n"+address;
+
+window.location.href="https://wa.me/9182059866?text="+encodeURIComponent(msg);
+}
+
+// ADMIN ACCESS (SECRET)
 document.body.addEventListener("dblclick",()=>{
-if(localStorage.getItem("user")==="admin"){
 adminPage.style.display="block";
-}else{
-alert("Login first");
-loginPage.style.display="block";
-}
 });
 
 // ADD PRODUCT
@@ -122,19 +177,30 @@ function addProduct(){
 products.push({
 name:pname.value,
 price:Number(pprice.value),
-img:pimg.value
+img:pimg.value,
+cat:pcat.value
 });
 load();
 }
 
-// CLOSE PAGE
-function closePage(){
-adminPage.style.display="none";
-loginPage.style.display="none";
+// SEARCH
+function search(){
+let val=searchInput.value.toLowerCase();
+let html="";
+products.forEach((p,i)=>{
+if(p.name.toLowerCase().includes(val)){
+html+=`
+<div class="card" onclick="openDetail(${i})">
+<img src="${p.img}">
+<h4>${p.name}</h4>
+<p class="price">₹${p.price}</p>
+</div>`;
+}
+});
+productsDiv.innerHTML=html;
 }
 
 // INIT
-updateUser();
 load();
 
 </script>
