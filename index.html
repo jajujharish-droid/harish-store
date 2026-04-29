@@ -71,7 +71,7 @@ input,select{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px s
 <h3 id="total"></h3>
 
 <input id="name" placeholder="Name">
-<input id="address" placeholder="Address">
+<input id="address" placeholder="Address (Armoor only)">
 
 <button class="payBtn" onclick="order()">Order via WhatsApp</button>
 </div>
@@ -164,14 +164,12 @@ document.getElementById("gallery").innerHTML=gallery;
 dname.innerText=selected.name;
 dprice.innerText="₹"+selected.price;
 
-// dynamic sizes
 let sizeHTML="";
 selected.sizes.forEach(s=>{
 sizeHTML+=`<option>${s}</option>`;
 });
 document.getElementById("size").innerHTML=sizeHTML;
 
-// dynamic colors
 let colorHTML="";
 selected.colors.forEach(c=>{
 colorHTML+=`<option>${c}</option>`;
@@ -181,7 +179,7 @@ document.getElementById("color").innerHTML=colorHTML;
 detail.style.display="block";
 }
 
-// ADD PRODUCT (UPDATED)
+// ADD PRODUCT
 function addProductAuto(){
 let name=prompt("Product name");
 let price=prompt("Price");
@@ -204,8 +202,6 @@ loadProducts();
 
 alert("Product added!");
 }
-
-// REST SAME (no change)
 
 // CLOSE
 function closeAll(){
@@ -258,10 +254,16 @@ function payNow(){
 window.location.href="upi://pay?pa=9182059866-2@ybl&pn=HarishStore&am="+selected.price;
 }
 
-// ORDER
+// ORDER (🔥 ADDED LOCATION CHECK ONLY)
 function order(){
 let name=nameInput.value;
 let address=addressInput.value;
+
+// 🚫 Armoor restriction
+if(!address.toLowerCase().includes("armoor")){
+alert("❌ Delivery only available in Armoor");
+return;
+}
 
 let cart=JSON.parse(localStorage.getItem("cart")||"[]");
 
