@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,25 +7,14 @@
 
 <style>
 body{margin:0;font-family:sans-serif;background:#f5f6fa}
-header{background:#000;color:#fff;padding:15px;display:flex;justify-content:space-between}
+header{background:#000;color:#fff;padding:15px;display:flex;justify-content:space-between;align-items:center}
 
-.tabs{
-display:flex;overflow:auto;padding:10px;background:#fff
-}
-.tabs button{
-margin-right:10px;padding:8px 12px;border:none;border-radius:20px;background:#ddd
-}
+.tabs{display:flex;gap:10px;padding:10px;background:#fff;overflow:auto}
+.tabs button{padding:8px 12px;border:none;border-radius:20px;background:#ddd}
 
-.container{
-display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px
-}
+.container{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
 
-.card{
-background:#fff;padding:10px;border-radius:12px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
-transition:0.2s;
-}
-.card:hover{transform:scale(1.03)}
+.card{background:#fff;padding:10px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
 .card img{width:100%;border-radius:10px}
 
 .price{color:green;font-weight:bold}
@@ -36,15 +26,14 @@ background:#fff;display:none;padding:15px;overflow:auto
 
 .close{background:red;color:#fff;padding:8px;border-radius:8px}
 
-.slider{
-display:flex;overflow-x:auto;gap:10px
-}
-.slider img{width:100%;max-width:250px;border-radius:10px}
+.slider{display:flex;overflow-x:auto;gap:10px}
+.slider img{width:250px;border-radius:10px}
 
 button{padding:10px;border:none;border-radius:8px;width:100%;margin-top:5px}
 .cartBtn{background:orange;color:#fff}
 .payBtn{background:#25D366;color:#fff}
 
+input{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid #ddd}
 </style>
 </head>
 
@@ -52,14 +41,19 @@ button{padding:10px;border:none;border-radius:8px;width:100%;margin-top:5px}
 
 <header>
 <div>🔥 Harish Store</div>
-<div onclick="openCart()">🛒</div>
+<div>
+<span onclick="addProductAuto()">➕</span>
+<span onclick="openCart()">🛒</span>
+</div>
 </header>
 
+<input id="search" placeholder="Search..." onkeyup="searchProducts()" style="margin:10px;padding:10px;width:90%">
+
 <div class="tabs">
-<button onclick="filter('all')">All</button>
-<button onclick="filter('shoes')">Shoes</button>
-<button onclick="filter('sneakers')">Sneakers</button>
-<button onclick="filter('slippers')">Slippers</button>
+<button onclick="filterProducts('all')">All</button>
+<button onclick="filterProducts('shoes')">Shoes</button>
+<button onclick="filterProducts('sneakers')">Sneakers</button>
+<button onclick="filterProducts('slippers')">Slippers</button>
 </div>
 
 <div class="container" id="products"></div>
@@ -77,57 +71,56 @@ button{padding:10px;border:none;border-radius:8px;width:100%;margin-top:5px}
 <p>Colors: Black, White</p>
 
 <button class="cartBtn" onclick="addToCart()">Add to Cart</button>
-<button onclick="payNow()">Pay Now</button>
+<button onclick="payNow()">Pay via UPI</button>
 </div>
 
 <!-- CART -->
 <div id="cartPage" class="page">
 <button class="close" onclick="closeAll()">❌</button>
 <h2>Cart</h2>
+
 <div id="cartItems"></div>
 <h3 id="total"></h3>
 
 <input id="name" placeholder="Name">
 <input id="address" placeholder="Address">
 
-<button class="payBtn" onclick="order()">Order WhatsApp</button>
+<button class="payBtn" onclick="order()">Order via WhatsApp</button>
 </div>
 
 <script>
 
-// PRODUCTS
-let products=[
+// LOAD PRODUCTS (AUTO STORAGE)
+let products = JSON.parse(localStorage.getItem("products")) || [
 {
 name:"Shoes",
 price:499,
 cat:"shoes",
-images:[
-"https://images.unsplash.com/photo-1528701800489-20be3c4dbe3c",
-"https://images.unsplash.com/photo-1542291026-7eec264c27ff"
-]
+images:["https://images.unsplash.com/photo-1528701800489-20be3c4dbe3c"]
 },
 {
 name:"Sneakers",
 price:599,
 cat:"sneakers",
-images:[
-"https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb"
-]
+images:["https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb"]
 },
 {
 name:"Slippers",
 price:199,
 cat:"slippers",
-images:[
-"https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a"
-]
+images:["https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a"]
 }
 ];
 
 let selected=null;
 
-// LOAD
-function load(list=products){
+// SAVE
+function saveProducts(){
+localStorage.setItem("products",JSON.stringify(products));
+}
+
+// LOAD UI
+function loadProducts(list=products){
 let html="";
 list.forEach((p,i)=>{
 html+=`
@@ -137,13 +130,20 @@ html+=`
 <p class="price">₹${p.price}</p>
 </div>`;
 });
-productsDiv.innerHTML=html;
+document.getElementById("products").innerHTML=html;
 }
 
 // FILTER
-function filter(cat){
-if(cat=="all") load();
-else load(products.filter(p=>p.cat==cat));
+function filterProducts(cat){
+if(cat==="all") loadProducts(products);
+else loadProducts(products.filter(p=>p.cat===cat));
+}
+
+// SEARCH
+function searchProducts(){
+let val=document.getElementById("search").value.toLowerCase();
+let filtered=products.filter(p=>p.name.toLowerCase().includes(val));
+loadProducts(filtered);
 }
 
 // DETAIL
@@ -156,39 +156,40 @@ gallery+=`<img src="${img}">`;
 });
 
 document.getElementById("gallery").innerHTML=gallery;
-dname.innerText=selected.name;
-dprice.innerText="₹"+selected.price;
+document.getElementById("dname").innerText=selected.name;
+document.getElementById("dprice").innerText="₹"+selected.price;
 
-detail.style.display="block";
+document.getElementById("detail").style.display="block";
 }
 
 // CLOSE
 function closeAll(){
-detail.style.display="none";
-cartPage.style.display="none";
+document.getElementById("detail").style.display="none";
+document.getElementById("cartPage").style.display="none";
 }
 
 // CART
 function addToCart(){
 let cart=JSON.parse(localStorage.getItem("cart")||"[]");
 
-let f=cart.find(c=>c.name==selected.name);
+let f=cart.find(c=>c.name===selected.name);
 if(f){f.qty++}
 else{cart.push({...selected,qty:1})}
 
 localStorage.setItem("cart",JSON.stringify(cart));
-alert("Added");
+alert("Added to cart");
 }
 
 // OPEN CART
 function openCart(){
-cartPage.style.display="block";
+document.getElementById("cartPage").style.display="block";
 loadCart();
 }
 
 // LOAD CART
 function loadCart(){
 let cart=JSON.parse(localStorage.getItem("cart")||"[]");
+
 let html="";let total=0;
 
 cart.forEach((c,i)=>{
@@ -196,26 +197,28 @@ total+=c.price*c.qty;
 
 html+=`
 <div>
-${c.name} x${c.qty}
-<button onclick="change(${i},1)">+</button>
-<button onclick="change(${i},-1)">-</button>
+${c.name} x${c.qty} = ₹${c.price*c.qty}
+<button onclick="changeQty(${i},1)">+</button>
+<button onclick="changeQty(${i},-1)">-</button>
 </div>`;
 });
 
-cartItems.innerHTML=html;
-total.innerText="Total ₹"+total;
+document.getElementById("cartItems").innerHTML=html;
+document.getElementById("total").innerText="Total ₹"+total;
 }
 
-// CHANGE QTY
-function change(i,v){
+// QTY
+function changeQty(i,v){
 let cart=JSON.parse(localStorage.getItem("cart"));
 cart[i].qty+=v;
+
 if(cart[i].qty<=0) cart.splice(i,1);
+
 localStorage.setItem("cart",JSON.stringify(cart));
 loadCart();
 }
 
-// PAY
+// PAYMENT
 function payNow(){
 window.location.href="upi://pay?pa=9182059866-2@ybl&pn=HarishStore&am="+selected.price;
 }
@@ -235,8 +238,33 @@ msg+="\n"+name+"\n"+address;
 window.location.href="https://wa.me/9182059866?text="+encodeURIComponent(msg);
 }
 
+// AUTO ADD PRODUCT
+function addProductAuto(){
+let name=prompt("Product name");
+let price=prompt("Price");
+let image=prompt("Image URL");
+let cat=prompt("Category (shoes/sneakers/slippers)");
+
+if(!name||!price||!image){
+alert("Fill properly");
+return;
+}
+
+products.push({
+name:name,
+price:Number(price),
+cat:cat||"shoes",
+images:[image]
+});
+
+saveProducts();
+loadProducts();
+
+alert("Product added!");
+}
+
 // INIT
-load();
+loadProducts();
 
 </script>
 
