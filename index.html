@@ -1,163 +1,230 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Harish Store</title>
 
 <style>
 body {
-    font-family: Arial;
-    background: #f1f5f9;
-    margin: 0;
+  margin:0;
+  font-family: Arial;
+  background:#f4f6f8;
 }
 
+/* HEADER */
 header {
-    background: black;
-    color: white;
-    text-align: center;
-    padding: 15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px;
+  background:black;
+  color:white;
+  position:sticky;
+  top:0;
 }
 
+.title {font-size:18px;font-weight:bold;}
+.menu {font-size:22px;cursor:pointer;}
+
+/* GRID */
 .container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 15px;
-    padding: 15px;
+  padding:12px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
 }
 
-.product {
-    background: white;
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-    text-align: center;
+/* CARD */
+.card {
+  background:white;
+  border-radius:12px;
+  padding:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  text-align:center;
 }
 
-.product img {
-    width: 100%;
-    border-radius: 10px;
+.card img {
+  width:100%;
+  height:150px;
+  object-fit:cover;
+  border-radius:10px;
 }
 
-.price {
-    color: green;
-    font-weight: bold;
-}
+.name {font-weight:bold;margin-top:5px;}
+.price {color:green;font-weight:bold;}
 
 button {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    margin-top: 5px;
-    border-radius: 6px;
-    font-weight: bold;
+  width:100%;
+  padding:10px;
+  margin-top:5px;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
 }
 
-.order-btn { background: #25D366; color: white; }
-.pay-btn { background: #007bff; color: white; }
+.order {background:#25D366;color:white;}
+.pay {background:#1e88e5;color:white;}
 
-.form-box {
-    background: white;
-    margin: 15px;
-    padding: 15px;
-    border-radius: 10px;
+/* FORM */
+.form {
+  background:white;
+  margin:10px;
+  padding:10px;
+  border-radius:10px;
 }
 
 input {
-    width: 100%;
-    padding: 8px;
-    margin: 5px 0;
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border-radius:8px;
+  border:1px solid #ddd;
 }
-</style>
 
+/* DRAWER */
+.drawer {
+  position:fixed;
+  top:0;
+  right:-100%;
+  width:80%;
+  height:100%;
+  background:white;
+  transition:0.3s;
+  padding:15px;
+  overflow:auto;
+}
+
+.drawer.open {right:0;}
+
+.order-item {
+  border:1px solid #eee;
+  padding:10px;
+  margin:5px 0;
+  border-radius:8px;
+}
+
+</style>
 </head>
 
 <body>
 
 <header>
-    <h2>🔥 Harish Store</h2>
-    <p>Fast Delivery in Armoor</p>
+  <div class="title">🔥 Harish Store</div>
+  <div class="menu" onclick="toggleMenu()">⋮</div>
 </header>
 
 <div class="container">
 
-<div class="product">
+<div class="card">
 <img src="https://images.unsplash.com/photo-1528701800489-20be3c4dbe3c">
-<h4>Sport Shoes</h4>
-<p class="price">₹499</p>
-<button class="order-btn" onclick="selectProduct('Sport Shoes ₹499')">Order</button>
-<button class="pay-btn" onclick="pay(499)">Pay Now</button>
+<div class="name">Sport Shoes</div>
+<div class="price">₹499</div>
+<button class="order" onclick="selectProduct('Sport Shoes ₹499')">Order</button>
+<button class="pay" onclick="pay(499)">Pay</button>
 </div>
 
-<div class="product">
+<div class="card">
 <img src="https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb">
-<h4>Casual Sneakers</h4>
-<p class="price">₹599</p>
-<button class="order-btn" onclick="selectProduct('Casual Sneakers ₹599')">Order</button>
-<button class="pay-btn" onclick="pay(599)">Pay Now</button>
+<div class="name">Casual Sneakers</div>
+<div class="price">₹599</div>
+<button class="order" onclick="selectProduct('Casual Sneakers ₹599')">Order</button>
+<button class="pay" onclick="pay(599)">Pay</button>
 </div>
 
-<div class="product">
+<div class="card">
 <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a">
-<h4>Slippers</h4>
-<p class="price">₹199</p>
-<button class="order-btn" onclick="selectProduct('Slippers ₹199')">Order</button>
-<button class="pay-btn" onclick="pay(199)">Pay Now</button>
+<div class="name">Slippers</div>
+<div class="price">₹199</div>
+<button class="order" onclick="selectProduct('Slippers ₹199')">Order</button>
+<button class="pay" onclick="pay(199)">Pay</button>
 </div>
 
 </div>
 
-<div class="form-box">
-<h3>📝 Complete Your Order</h3>
+<div class="form">
+<h3>Order Details</h3>
+<input id="name" placeholder="Name">
+<input id="phone" placeholder="Phone">
+<input id="address" placeholder="Address">
+<input id="product" placeholder="Product" readonly>
 
-<input id="name" placeholder="Your Name">
-<input id="phone" placeholder="Phone Number">
-<input id="address" placeholder="Delivery Address">
-<input id="product" placeholder="Selected Product" readonly>
+<button class="order" onclick="sendOrder()">Send Order</button>
+</div>
 
-<button class="order-btn" onclick="sendOrder()">Send Order on WhatsApp</button>
+<div id="drawer" class="drawer">
+<h3>Your Orders</h3>
+<div id="orders"></div>
 </div>
 
 <script>
 
-function selectProduct(item){
-    document.getElementById("product").value = item;
+// MENU
+function toggleMenu(){
+  document.getElementById("drawer").classList.toggle("open");
+  loadOrders();
 }
 
-function generateOrderId(){
-    return "ORD" + Math.floor(Math.random()*100000);
+// SELECT PRODUCT
+function selectProduct(p){
+  document.getElementById("product").value=p;
 }
 
+// ORDER ID
+function generateId(){
+  return "ORD"+Math.floor(Math.random()*100000);
+}
+
+// SAVE ORDER
+function saveOrder(o){
+  let data=JSON.parse(localStorage.getItem("orders")||"[]");
+  data.unshift(o);
+  localStorage.setItem("orders",JSON.stringify(data));
+}
+
+// LOAD ORDERS
+function loadOrders(){
+  let list=document.getElementById("orders");
+  let data=JSON.parse(localStorage.getItem("orders")||"[]");
+  list.innerHTML="";
+  if(data.length===0){
+    list.innerHTML="No orders yet";
+    return;
+  }
+  data.forEach(o=>{
+    list.innerHTML+=`
+    <div class="order-item">
+    <b>${o.id}</b><br>
+    ${o.product}<br>
+    Status: ${o.status}
+    </div>`;
+  });
+}
+
+// SEND ORDER
 function sendOrder(){
-    let name = document.getElementById("name").value;
-    let phone = document.getElementById("phone").value;
-    let address = document.getElementById("address").value;
-    let product = document.getElementById("product").value;
+  let name=document.getElementById("name").value;
+  let phone=document.getElementById("phone").value;
+  let address=document.getElementById("address").value;
+  let product=document.getElementById("product").value;
 
-    if(!name || !phone || !address || !product){
-        alert("Please fill all details");
-        return;
-    }
+  if(!name||!phone||!address||!product){
+    alert("Fill all details");
+    return;
+  }
 
-    let orderId = generateOrderId();
+  let id=generateId();
 
-    let message = 
-    "🛒 *New Order*\n\n" +
-    "📦 Order ID: " + orderId + "\n" +
-    "👤 Name: " + name + "\n" +
-    "📱 Phone: " + phone + "\n" +
-    "🏠 Address: " + address + "\n" +
-    "🛍 Product: " + product + "\n\n" +
-    "💰 Payment: Will pay via UPI";
+  let order={id,product,status:"Pending"};
+  saveOrder(order);
 
-    let url = "https://wa.me/9182059866?text=" + encodeURIComponent(message);
-    window.location.href = url;
+  let msg=`Order ${id}\n${product}\n${name}\n${phone}\n${address}`;
+  window.location.href="https://wa.me/9182059866?text="+encodeURIComponent(msg);
 }
 
-// PAYMENT FUNCTION (WITH YOUR UPI)
+// PAYMENT
 function pay(amount){
-    let upi = "9182059866-2@ybl";
-    let name = "HarishStore";
-    let url = "upi://pay?pa=" + upi + "&pn=" + name + "&am=" + amount + "&cu=INR";
-    window.location.href = url;
+  let upi="9182059866-2@ybl";
+  window.location.href="upi://pay?pa="+upi+"&pn=HarishStore&am="+amount+"&cu=INR";
 }
 
 </script>
