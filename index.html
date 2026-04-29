@@ -5,227 +5,137 @@
 <title>Harish Store</title>
 
 <style>
-body {
-  margin:0;
-  font-family: Arial;
-  background:#f4f6f8;
+body{margin:0;font-family:Arial;background:#f4f6f8}
+header{display:flex;justify-content:space-between;padding:15px;background:black;color:white}
+.container{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
+.card{background:white;padding:10px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,0.1)}
+.card img{width:100%;border-radius:10px}
+.price{color:green;font-weight:bold}
+button{width:100%;padding:10px;margin-top:5px;border:none;border-radius:8px}
+.cart{background:orange;color:white}
+.order{background:#25D366;color:white}
+
+.page{
+position:fixed;top:0;left:0;width:100%;height:100%;
+background:white;display:none;padding:15px
 }
 
-/* HEADER */
-header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:15px;
-  background:black;
-  color:white;
-  position:sticky;
-  top:0;
-}
-
-.title {font-size:18px;font-weight:bold;}
-.menu {font-size:22px;cursor:pointer;}
-
-/* GRID */
-.container {
-  padding:12px;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-}
-
-/* CARD */
-.card {
-  background:white;
-  border-radius:12px;
-  padding:10px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
-  text-align:center;
-}
-
-.card img {
-  width:100%;
-  height:150px;
-  object-fit:cover;
-  border-radius:10px;
-}
-
-.name {font-weight:bold;margin-top:5px;}
-.price {color:green;font-weight:bold;}
-
-button {
-  width:100%;
-  padding:10px;
-  margin-top:5px;
-  border:none;
-  border-radius:8px;
-  font-weight:bold;
-}
-
-.order {background:#25D366;color:white;}
-.pay {background:#1e88e5;color:white;}
-
-/* FORM */
-.form {
-  background:white;
-  margin:10px;
-  padding:10px;
-  border-radius:10px;
-}
-
-input {
-  width:100%;
-  padding:10px;
-  margin:5px 0;
-  border-radius:8px;
-  border:1px solid #ddd;
-}
-
-/* DRAWER */
-.drawer {
-  position:fixed;
-  top:0;
-  right:-100%;
-  width:80%;
-  height:100%;
-  background:white;
-  transition:0.3s;
-  padding:15px;
-  overflow:auto;
-}
-
-.drawer.open {right:0;}
-
-.order-item {
-  border:1px solid #eee;
-  padding:10px;
-  margin:5px 0;
-  border-radius:8px;
-}
-
+input{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid #ddd}
 </style>
+
 </head>
 
 <body>
 
 <header>
-  <div class="title">🔥 Harish Store</div>
-  <div class="menu" onclick="toggleMenu()">⋮</div>
+<div>🔥 Harish Store</div>
+<div id="userInfo" onclick="logout()">Login</div>
 </header>
 
-<div class="container">
-
-<div class="card">
-<img src="https://images.unsplash.com/photo-1528701800489-20be3c4dbe3c">
-<div class="name">Sport Shoes</div>
-<div class="price">₹499</div>
-<button class="order" onclick="selectProduct('Sport Shoes ₹499')">Order</button>
-<button class="pay" onclick="pay(499)">Pay</button>
+<!-- LOGIN PAGE -->
+<div id="loginPage" class="page">
+<h3>Login</h3>
+<input id="username" placeholder="Username">
+<input id="password" placeholder="Password" type="password">
+<button onclick="login()">Login</button>
 </div>
 
-<div class="card">
-<img src="https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb">
-<div class="name">Casual Sneakers</div>
-<div class="price">₹599</div>
-<button class="order" onclick="selectProduct('Casual Sneakers ₹599')">Order</button>
-<button class="pay" onclick="pay(599)">Pay</button>
-</div>
+<div class="container" id="products"></div>
 
-<div class="card">
-<img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a">
-<div class="name">Slippers</div>
-<div class="price">₹199</div>
-<button class="order" onclick="selectProduct('Slippers ₹199')">Order</button>
-<button class="pay" onclick="pay(199)">Pay</button>
-</div>
-
-</div>
-
-<div class="form">
-<h3>Order Details</h3>
-<input id="name" placeholder="Name">
-<input id="phone" placeholder="Phone">
-<input id="address" placeholder="Address">
-<input id="product" placeholder="Product" readonly>
-
-<button class="order" onclick="sendOrder()">Send Order</button>
-</div>
-
-<div id="drawer" class="drawer">
-<h3>Your Orders</h3>
-<div id="orders"></div>
+<!-- ADMIN -->
+<div id="adminPage" class="page">
+<button onclick="closePage()">← Back</button>
+<h3>Admin Panel</h3>
+<input id="pname" placeholder="Product name">
+<input id="pprice" placeholder="Price">
+<input id="pimg" placeholder="Image URL">
+<button onclick="addProduct()">Add Product</button>
 </div>
 
 <script>
 
-// MENU
-function toggleMenu(){
-  document.getElementById("drawer").classList.toggle("open");
-  loadOrders();
+// PRODUCTS
+let products=JSON.parse(localStorage.getItem("products")||`[
+{"name":"Shoes","price":499,"img":"https://images.unsplash.com/photo-1528701800489-20be3c4dbe3c"},
+{"name":"Sneakers","price":599,"img":"https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb"}
+]`);
+
+function load(){
+let html="";
+products.forEach((p,i)=>{
+html+=`
+<div class="card">
+<img src="${p.img}">
+<h4>${p.name}</h4>
+<p class="price">₹${p.price}</p>
+</div>`;
+});
+productsDiv.innerHTML=html;
+localStorage.setItem("products",JSON.stringify(products));
 }
 
-// SELECT PRODUCT
-function selectProduct(p){
-  document.getElementById("product").value=p;
+// LOGIN SYSTEM
+function login(){
+let u=usernameInput.value;
+let p=passwordInput.value;
+
+if(u==="admin" && p==="1234"){
+localStorage.setItem("user","admin");
+loginPage.style.display="none";
+updateUser();
+alert("Admin Login");
+}else{
+alert("Wrong login");
+}
 }
 
-// ORDER ID
-function generateId(){
-  return "ORD"+Math.floor(Math.random()*100000);
+// LOGOUT
+function logout(){
+localStorage.removeItem("user");
+updateUser();
+loginPage.style.display="block";
 }
 
-// SAVE ORDER
-function saveOrder(o){
-  let data=JSON.parse(localStorage.getItem("orders")||"[]");
-  data.unshift(o);
-  localStorage.setItem("orders",JSON.stringify(data));
+// CHECK LOGIN
+function updateUser(){
+let user=localStorage.getItem("user");
+
+if(user==="admin"){
+userInfo.innerText="Admin";
+}else{
+userInfo.innerText="Login";
+}
 }
 
-// LOAD ORDERS
-function loadOrders(){
-  let list=document.getElementById("orders");
-  let data=JSON.parse(localStorage.getItem("orders")||"[]");
-  list.innerHTML="";
-  if(data.length===0){
-    list.innerHTML="No orders yet";
-    return;
-  }
-  data.forEach(o=>{
-    list.innerHTML+=`
-    <div class="order-item">
-    <b>${o.id}</b><br>
-    ${o.product}<br>
-    Status: ${o.status}
-    </div>`;
-  });
+// OPEN ADMIN (DOUBLE CLICK)
+document.body.addEventListener("dblclick",()=>{
+if(localStorage.getItem("user")==="admin"){
+adminPage.style.display="block";
+}else{
+alert("Login first");
+loginPage.style.display="block";
+}
+});
+
+// ADD PRODUCT
+function addProduct(){
+products.push({
+name:pname.value,
+price:Number(pprice.value),
+img:pimg.value
+});
+load();
 }
 
-// SEND ORDER
-function sendOrder(){
-  let name=document.getElementById("name").value;
-  let phone=document.getElementById("phone").value;
-  let address=document.getElementById("address").value;
-  let product=document.getElementById("product").value;
-
-  if(!name||!phone||!address||!product){
-    alert("Fill all details");
-    return;
-  }
-
-  let id=generateId();
-
-  let order={id,product,status:"Pending"};
-  saveOrder(order);
-
-  let msg=`Order ${id}\n${product}\n${name}\n${phone}\n${address}`;
-  window.location.href="https://wa.me/9182059866?text="+encodeURIComponent(msg);
+// CLOSE PAGE
+function closePage(){
+adminPage.style.display="none";
+loginPage.style.display="none";
 }
 
-// PAYMENT
-function pay(amount){
-  let upi="9182059866-2@ybl";
-  window.location.href="upi://pay?pa="+upi+"&pn=HarishStore&am="+amount+"&cu=INR";
-}
+// INIT
+updateUser();
+load();
 
 </script>
 
