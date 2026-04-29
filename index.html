@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,33 +6,21 @@
 
 <style>
 body{margin:0;font-family:sans-serif;background:#f5f6fa}
-header{background:#000;color:#fff;padding:15px;display:flex;justify-content:space-between;align-items:center}
-
-.tabs{display:flex;gap:10px;padding:10px;background:#fff;overflow:auto}
-.tabs button{padding:8px 12px;border:none;border-radius:20px;background:#ddd}
-
+header{background:#000;color:#fff;padding:15px;display:flex;justify-content:space-between}
 .container{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
-
 .card{background:#fff;padding:10px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
 .card img{width:100%;border-radius:10px}
-
 .price{color:green;font-weight:bold}
-
-.page{
-position:fixed;top:0;left:0;width:100%;height:100%;
-background:#fff;display:none;padding:15px;overflow:auto
-}
-
-.close{background:red;color:#fff;padding:8px;border-radius:8px}
-
-.slider{display:flex;overflow-x:auto;gap:10px}
-.slider img{width:250px;border-radius:10px}
-
-button{padding:10px;border:none;border-radius:8px;width:100%;margin-top:5px}
+button{width:100%;padding:10px;margin-top:5px;border:none;border-radius:8px}
 .cartBtn{background:orange;color:#fff}
 .payBtn{background:#25D366;color:#fff}
-
-input{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid #ddd}
+.tabs{display:flex;gap:10px;padding:10px}
+.tabs button{border:none;padding:8px 12px;border-radius:20px;background:#ddd}
+.page{position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;display:none;padding:15px;overflow:auto}
+.slider{display:flex;gap:10px;overflow:auto}
+.slider img{width:250px;border-radius:10px}
+input,select{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid #ddd}
+.close{background:red;color:white}
 </style>
 </head>
 
@@ -58,17 +45,31 @@ input{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid #d
 
 <div class="container" id="products"></div>
 
-<!-- DETAIL -->
+<!-- DETAIL PAGE -->
 <div id="detail" class="page">
-<button class="close" onclick="closeAll()">❌</button>
+<button class="close" onclick="closeAll()">❌ Back</button>
 
 <div class="slider" id="gallery"></div>
 
 <h2 id="dname"></h2>
 <p id="dprice"></p>
 
-<p>Sizes: 7,8,9,10</p>
-<p>Colors: Black, White</p>
+<select id="size">
+<option>Select Size</option>
+<option>7</option>
+<option>8</option>
+<option>9</option>
+<option>10</option>
+</select>
+
+<select id="color">
+<option>Select Color</option>
+<option>Black</option>
+<option>White</option>
+<option>Blue</option>
+</select>
+
+<input type="number" id="qty" value="1" min="1">
 
 <button class="cartBtn" onclick="addToCart()">Add to Cart</button>
 <button onclick="payNow()">Pay via UPI</button>
@@ -76,9 +77,9 @@ input{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid #d
 
 <!-- CART -->
 <div id="cartPage" class="page">
-<button class="close" onclick="closeAll()">❌</button>
-<h2>Cart</h2>
+<button class="close" onclick="closeAll()">❌ Back</button>
 
+<h2>Cart</h2>
 <div id="cartItems"></div>
 <h3 id="total"></h3>
 
@@ -90,25 +91,19 @@ input{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid #d
 
 <script>
 
-// LOAD PRODUCTS (AUTO STORAGE)
+// PRODUCTS
 let products = JSON.parse(localStorage.getItem("products")) || [
 {
-name:"Shoes",
-price:499,
+name:"Duke Shoes",
+price:1295,
 cat:"shoes",
-images:["https://images.unsplash.com/photo-1528701800489-20be3c4dbe3c"]
+images:["https://images.unsplash.com/photo-1528701800489-20be3c4dbe3c?auto=format&fit=crop&w=800&q=80"]
 },
 {
 name:"Sneakers",
-price:599,
+price:999,
 cat:"sneakers",
-images:["https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb"]
-},
-{
-name:"Slippers",
-price:199,
-cat:"slippers",
-images:["https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a"]
+images:["https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?auto=format&fit=crop&w=800&q=80"]
 }
 ];
 
@@ -119,7 +114,7 @@ function saveProducts(){
 localStorage.setItem("products",JSON.stringify(products));
 }
 
-// LOAD UI
+// LOAD PRODUCTS
 function loadProducts(list=products){
 let html="";
 list.forEach((p,i)=>{
@@ -128,6 +123,7 @@ html+=`
 <img src="${p.images[0]}">
 <h4>${p.name}</h4>
 <p class="price">₹${p.price}</p>
+<button onclick="event.stopPropagation(); removeProduct(${i})">Delete</button>
 </div>`;
 });
 document.getElementById("products").innerHTML=html;
@@ -142,8 +138,7 @@ else loadProducts(products.filter(p=>p.cat===cat));
 // SEARCH
 function searchProducts(){
 let val=document.getElementById("search").value.toLowerCase();
-let filtered=products.filter(p=>p.name.toLowerCase().includes(val));
-loadProducts(filtered);
+loadProducts(products.filter(p=>p.name.toLowerCase().includes(val)));
 }
 
 // DETAIL
@@ -168,19 +163,32 @@ document.getElementById("detail").style.display="none";
 document.getElementById("cartPage").style.display="none";
 }
 
-// CART
+// ADD TO CART
 function addToCart(){
+let size=document.getElementById("size").value;
+let color=document.getElementById("color").value;
+let qty=Number(document.getElementById("qty").value);
+
+if(size==="Select Size"||color==="Select Color"){
+alert("Select size & color");
+return;
+}
+
 let cart=JSON.parse(localStorage.getItem("cart")||"[]");
 
-let f=cart.find(c=>c.name===selected.name);
-if(f){f.qty++}
-else{cart.push({...selected,qty:1})}
+cart.push({
+name:selected.name,
+price:selected.price,
+size:size,
+color:color,
+qty:qty
+});
 
 localStorage.setItem("cart",JSON.stringify(cart));
 alert("Added to cart");
 }
 
-// OPEN CART
+// CART
 function openCart(){
 document.getElementById("cartPage").style.display="block";
 loadCart();
@@ -189,7 +197,6 @@ loadCart();
 // LOAD CART
 function loadCart(){
 let cart=JSON.parse(localStorage.getItem("cart")||"[]");
-
 let html="";let total=0;
 
 cart.forEach((c,i)=>{
@@ -197,9 +204,10 @@ total+=c.price*c.qty;
 
 html+=`
 <div>
-${c.name} x${c.qty} = ₹${c.price*c.qty}
+${c.name} (${c.size}, ${c.color}) x${c.qty} = ₹${c.price*c.qty}
 <button onclick="changeQty(${i},1)">+</button>
 <button onclick="changeQty(${i},-1)">-</button>
+<button onclick="removeItem(${i})">❌</button>
 </div>`;
 });
 
@@ -211,11 +219,26 @@ document.getElementById("total").innerText="Total ₹"+total;
 function changeQty(i,v){
 let cart=JSON.parse(localStorage.getItem("cart"));
 cart[i].qty+=v;
-
 if(cart[i].qty<=0) cart.splice(i,1);
-
 localStorage.setItem("cart",JSON.stringify(cart));
 loadCart();
+}
+
+// REMOVE ITEM
+function removeItem(i){
+let cart=JSON.parse(localStorage.getItem("cart"));
+cart.splice(i,1);
+localStorage.setItem("cart",JSON.stringify(cart));
+loadCart();
+}
+
+// DELETE PRODUCT
+function removeProduct(i){
+if(confirm("Delete product?")){
+products.splice(i,1);
+saveProducts();
+loadProducts();
+}
 }
 
 // PAYMENT
@@ -238,7 +261,7 @@ msg+="\n"+name+"\n"+address;
 window.location.href="https://wa.me/9182059866?text="+encodeURIComponent(msg);
 }
 
-// AUTO ADD PRODUCT
+// ADD PRODUCT
 function addProductAuto(){
 let name=prompt("Product name");
 let price=prompt("Price");
