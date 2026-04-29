@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Harish Store</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f1f5f9;
+    margin: 0;
+}
+
+header {
+    background: black;
+    color: white;
+    text-align: center;
+    padding: 15px;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    padding: 15px;
+}
+
+.product {
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.product img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.price {
+    color: green;
+    font-weight: bold;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    margin-top: 5px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.order-btn { background: #25D366; color: white; }
+.pay-btn { background: #007bff; color: white; }
+
+.form-box {
+    background: white;
+    margin: 15px;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+}
+</style>
+
+</head>
+
+<body>
+
+<header>
+    <h2>🔥 Harish Store</h2>
+    <p>Fast Delivery in Armoor</p>
+</header>
+
+<div class="container">
+
+<div class="product">
+<img src="https://images.unsplash.com/photo-1528701800489-20be3c4dbe3c">
+<h4>Sport Shoes</h4>
+<p class="price">₹499</p>
+<button class="order-btn" onclick="selectProduct('Sport Shoes ₹499')">Order</button>
+<button class="pay-btn" onclick="pay(499)">Pay Now</button>
+</div>
+
+<div class="product">
+<img src="https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb">
+<h4>Casual Sneakers</h4>
+<p class="price">₹599</p>
+<button class="order-btn" onclick="selectProduct('Casual Sneakers ₹599')">Order</button>
+<button class="pay-btn" onclick="pay(599)">Pay Now</button>
+</div>
+
+<div class="product">
+<img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a">
+<h4>Slippers</h4>
+<p class="price">₹199</p>
+<button class="order-btn" onclick="selectProduct('Slippers ₹199')">Order</button>
+<button class="pay-btn" onclick="pay(199)">Pay Now</button>
+</div>
+
+</div>
+
+<div class="form-box">
+<h3>📝 Complete Your Order</h3>
+
+<input id="name" placeholder="Your Name">
+<input id="phone" placeholder="Phone Number">
+<input id="address" placeholder="Delivery Address">
+<input id="product" placeholder="Selected Product" readonly>
+
+<button class="order-btn" onclick="sendOrder()">Send Order on WhatsApp</button>
+</div>
+
+<script>
+
+function selectProduct(item){
+    document.getElementById("product").value = item;
+}
+
+function generateOrderId(){
+    return "ORD" + Math.floor(Math.random()*100000);
+}
+
+function sendOrder(){
+    let name = document.getElementById("name").value;
+    let phone = document.getElementById("phone").value;
+    let address = document.getElementById("address").value;
+    let product = document.getElementById("product").value;
+
+    if(!name || !phone || !address || !product){
+        alert("Please fill all details");
+        return;
+    }
+
+    let orderId = generateOrderId();
+
+    let message = 
+    "🛒 *New Order*\n\n" +
+    "📦 Order ID: " + orderId + "\n" +
+    "👤 Name: " + name + "\n" +
+    "📱 Phone: " + phone + "\n" +
+    "🏠 Address: " + address + "\n" +
+    "🛍 Product: " + product + "\n\n" +
+    "💰 Payment: Will pay via UPI";
+
+    let url = "https://wa.me/9182059866?text=" + encodeURIComponent(message);
+    window.location.href = url;
+}
+
+// PAYMENT FUNCTION (WITH YOUR UPI)
+function pay(amount){
+    let upi = "9182059866-2@ybl";
+    let name = "HarishStore";
+    let url = "upi://pay?pa=" + upi + "&pn=" + name + "&am=" + amount + "&cu=INR";
+    window.location.href = url;
+}
+
+</script>
+
+</body>
+</html>
