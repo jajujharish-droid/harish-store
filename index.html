@@ -1,26 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Harish Store</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#f4f6f8}
-header{display:flex;justify-content:space-between;padding:15px;background:black;color:white}
-.container{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
-.card{background:white;padding:10px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,0.1)}
+body{margin:0;font-family:sans-serif;background:#f5f6fa}
+header{background:#000;color:#fff;padding:15px;display:flex;justify-content:space-between}
+
+.tabs{
+display:flex;overflow:auto;padding:10px;background:#fff
+}
+.tabs button{
+margin-right:10px;padding:8px 12px;border:none;border-radius:20px;background:#ddd
+}
+
+.container{
+display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px
+}
+
+.card{
+background:#fff;padding:10px;border-radius:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+transition:0.2s;
+}
+.card:hover{transform:scale(1.03)}
 .card img{width:100%;border-radius:10px}
+
 .price{color:green;font-weight:bold}
-button{width:100%;padding:10px;margin-top:5px;border:none;border-radius:8px}
-.cartBtn{background:orange;color:white}
-.orderBtn{background:#25D366;color:white}
 
 .page{
 position:fixed;top:0;left:0;width:100%;height:100%;
-background:white;display:none;padding:15px;overflow:auto
+background:#fff;display:none;padding:15px;overflow:auto
 }
 
-input{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid #ddd}
+.close{background:red;color:#fff;padding:8px;border-radius:8px}
+
+.slider{
+display:flex;overflow-x:auto;gap:10px
+}
+.slider img{width:100%;max-width:250px;border-radius:10px}
+
+button{padding:10px;border:none;border-radius:8px;width:100%;margin-top:5px}
+.cartBtn{background:orange;color:#fff}
+.payBtn{background:#25D366;color:#fff}
+
 </style>
 </head>
 
@@ -31,194 +55,188 @@ input{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid #d
 <div onclick="openCart()">🛒</div>
 </header>
 
-<input id="search" placeholder="Search..." onkeyup="searchProducts()" style="margin:10px;padding:10px;width:90%">
+<div class="tabs">
+<button onclick="filter('all')">All</button>
+<button onclick="filter('shoes')">Shoes</button>
+<button onclick="filter('sneakers')">Sneakers</button>
+<button onclick="filter('slippers')">Slippers</button>
+</div>
 
 <div class="container" id="products"></div>
 
 <!-- DETAIL -->
-<div id="detailPage" class="page">
-<button onclick="closePages()">← Back</button>
-<img id="dimg">
-<h3 id="dname"></h3>
+<div id="detail" class="page">
+<button class="close" onclick="closeAll()">❌</button>
+
+<div class="slider" id="gallery"></div>
+
+<h2 id="dname"></h2>
 <p id="dprice"></p>
+
+<p>Sizes: 7,8,9,10</p>
+<p>Colors: Black, White</p>
+
 <button class="cartBtn" onclick="addToCart()">Add to Cart</button>
+<button onclick="payNow()">Pay Now</button>
 </div>
 
 <!-- CART -->
 <div id="cartPage" class="page">
-<button onclick="closePages()">← Back</button>
-<h3>Cart</h3>
+<button class="close" onclick="closeAll()">❌</button>
+<h2>Cart</h2>
 <div id="cartItems"></div>
 <h3 id="total"></h3>
 
-<h3>Details</h3>
 <input id="name" placeholder="Name">
-<input id="phone" placeholder="Phone">
 <input id="address" placeholder="Address">
 
-<button class="orderBtn" onclick="placeOrder()">Order</button>
-</div>
-
-<!-- ADMIN -->
-<div id="adminPage" class="page">
-<button onclick="closePages()">← Back</button>
-<h3>Admin Panel</h3>
-
-<input id="pname" placeholder="Product name">
-<input id="pprice" placeholder="Price">
-<input id="pimg" placeholder="Image URL">
-
-<button onclick="addProduct()">Add Product</button>
+<button class="payBtn" onclick="order()">Order WhatsApp</button>
 </div>
 
 <script>
 
-// DATA
-let products = JSON.parse(localStorage.getItem("products")) || [
-{name:"Shoes",price:499,img:"https://images.unsplash.com/photo-1528701800489-20be3c4dbe3c"},
-{name:"Sneakers",price:599,img:"https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb"}
+// PRODUCTS
+let products=[
+{
+name:"Shoes",
+price:499,
+cat:"shoes",
+images:[
+"https://images.unsplash.com/photo-1528701800489-20be3c4dbe3c",
+"https://images.unsplash.com/photo-1542291026-7eec264c27ff"
+]
+},
+{
+name:"Sneakers",
+price:599,
+cat:"sneakers",
+images:[
+"https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb"
+]
+},
+{
+name:"Slippers",
+price:199,
+cat:"slippers",
+images:[
+"https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a"
+]
+}
 ];
 
-let selected = null;
+let selected=null;
 
 // LOAD
-function loadProducts(){
+function load(list=products){
 let html="";
-products.forEach((p,i)=>{
+list.forEach((p,i)=>{
 html+=`
 <div class="card" onclick="openDetail(${i})">
-<img src="${p.img}">
+<img src="${p.images[0]}">
 <h4>${p.name}</h4>
 <p class="price">₹${p.price}</p>
 </div>`;
 });
-document.getElementById("products").innerHTML = html;
-localStorage.setItem("products", JSON.stringify(products));
+productsDiv.innerHTML=html;
+}
+
+// FILTER
+function filter(cat){
+if(cat=="all") load();
+else load(products.filter(p=>p.cat==cat));
 }
 
 // DETAIL
 function openDetail(i){
-selected = products[i];
-document.getElementById("dimg").src = selected.img;
-document.getElementById("dname").innerText = selected.name;
-document.getElementById("dprice").innerText = "₹"+selected.price;
-document.getElementById("detailPage").style.display="block";
+selected=products[i];
+
+let gallery="";
+selected.images.forEach(img=>{
+gallery+=`<img src="${img}">`;
+});
+
+document.getElementById("gallery").innerHTML=gallery;
+dname.innerText=selected.name;
+dprice.innerText="₹"+selected.price;
+
+detail.style.display="block";
 }
 
-function closePages(){
-document.getElementById("detailPage").style.display="none";
-document.getElementById("cartPage").style.display="none";
-document.getElementById("adminPage").style.display="none";
+// CLOSE
+function closeAll(){
+detail.style.display="none";
+cartPage.style.display="none";
 }
 
 // CART
 function addToCart(){
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-let found = cart.find(c=>c.name===selected.name);
+let cart=JSON.parse(localStorage.getItem("cart")||"[]");
 
-if(found){found.qty++} else {cart.push({...selected,qty:1})}
+let f=cart.find(c=>c.name==selected.name);
+if(f){f.qty++}
+else{cart.push({...selected,qty:1})}
 
-localStorage.setItem("cart", JSON.stringify(cart));
-alert("Added to cart");
+localStorage.setItem("cart",JSON.stringify(cart));
+alert("Added");
 }
 
-// CART PAGE
+// OPEN CART
 function openCart(){
-document.getElementById("cartPage").style.display="block";
+cartPage.style.display="block";
 loadCart();
 }
 
+// LOAD CART
 function loadCart(){
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-let html=""; let total=0;
+let cart=JSON.parse(localStorage.getItem("cart")||"[]");
+let html="";let total=0;
 
 cart.forEach((c,i)=>{
-total += c.price*c.qty;
+total+=c.price*c.qty;
 
 html+=`
 <div>
-${c.name} x${c.qty} = ₹${c.price*c.qty}
-<button onclick="changeQty(${i},1)">+</button>
-<button onclick="changeQty(${i},-1)">-</button>
+${c.name} x${c.qty}
+<button onclick="change(${i},1)">+</button>
+<button onclick="change(${i},-1)">-</button>
 </div>`;
 });
 
-document.getElementById("cartItems").innerHTML = html;
-document.getElementById("total").innerText = "Total: ₹"+total;
+cartItems.innerHTML=html;
+total.innerText="Total ₹"+total;
 }
 
-// QTY
-function changeQty(i,val){
-let cart = JSON.parse(localStorage.getItem("cart"));
-cart[i].qty += val;
+// CHANGE QTY
+function change(i,v){
+let cart=JSON.parse(localStorage.getItem("cart"));
+cart[i].qty+=v;
 if(cart[i].qty<=0) cart.splice(i,1);
-localStorage.setItem("cart", JSON.stringify(cart));
+localStorage.setItem("cart",JSON.stringify(cart));
 loadCart();
 }
 
-// ORDER
-function placeOrder(){
-let name=document.getElementById("name").value;
-let phone=document.getElementById("phone").value;
-let address=document.getElementById("address").value;
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-if(!name||!phone||!address||cart.length==0){
-alert("Fill all details");
-return;
+// PAY
+function payNow(){
+window.location.href="upi://pay?pa=9182059866-2@ybl&pn=HarishStore&am="+selected.price;
 }
 
-let msg="Order:\n";
-cart.forEach(c=>{
-msg+=`${c.name} x${c.qty}\n`;
-});
+// ORDER
+function order(){
+let name=document.getElementById("name").value;
+let address=document.getElementById("address").value;
 
-msg+=`\n${name}\n${phone}\n${address}`;
+let cart=JSON.parse(localStorage.getItem("cart")||"[]");
+
+let msg="Order:\n";
+cart.forEach(c=>msg+=c.name+" x"+c.qty+"\n");
+
+msg+="\n"+name+"\n"+address;
 
 window.location.href="https://wa.me/9182059866?text="+encodeURIComponent(msg);
 }
 
-// ADMIN
-document.body.addEventListener("dblclick",()=>{
-document.getElementById("adminPage").style.display="block";
-});
-
-function addProduct(){
-let name=document.getElementById("pname").value;
-let price=Number(document.getElementById("pprice").value);
-let img=document.getElementById("pimg").value;
-
-if(!name||!price||!img){
-alert("Fill properly");
-return;
-}
-
-products.push({name,price,img});
-loadProducts();
-alert("Added");
-}
-
-// SEARCH
-function searchProducts(){
-let val=document.getElementById("search").value.toLowerCase();
-let html="";
-
-products.forEach((p,i)=>{
-if(p.name.toLowerCase().includes(val)){
-html+=`
-<div class="card" onclick="openDetail(${i})">
-<img src="${p.img}">
-<h4>${p.name}</h4>
-<p class="price">₹${p.price}</p>
-</div>`;
-}
-});
-
-document.getElementById("products").innerHTML = html;
-}
-
 // INIT
-loadProducts();
+load();
 
 </script>
 
